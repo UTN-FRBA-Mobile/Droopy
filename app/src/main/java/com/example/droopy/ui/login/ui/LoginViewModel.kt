@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.ui.platform.LocalContext
 
 class LoginViewModel : ViewModel() {
     private val _email = MutableLiveData<String>()

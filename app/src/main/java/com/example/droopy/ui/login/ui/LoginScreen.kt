@@ -1,5 +1,6 @@
 package com.example.droopy.ui.login.ui
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +47,7 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
     val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = false)
     val coroutineScope = rememberCoroutineScope()
+    val mContext = LocalContext.current
 
     if (isLoading) {
         Box(Modifier.fillMaxSize()) {
@@ -61,6 +64,12 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
             LoginButton(loginEnable) {
                 coroutineScope.launch {
                     viewModel.onLoginSelected()
+                    mContext.startActivity(
+                        Intent(
+                            mContext,
+                            com.example.droopy.ui.maps.MapsActivity::class.java
+                        )
+                    )
                 }
             }
         }
