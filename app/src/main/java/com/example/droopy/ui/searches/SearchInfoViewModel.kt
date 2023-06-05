@@ -26,6 +26,7 @@ class SearchInfoViewModel : ViewModel() {
     val searchInfoState: State<SearchInfo?> = _searchInfoState
 
     fun getSearchInfoById(searchId: String) {
+        Log.i(this.javaClass.name, "Fetching searchInfo id: $searchId")
         viewModelScope.launch {
             try {
                 val search = fetchSearchById(searchId)

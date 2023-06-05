@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.droopy.ui.login.ui.LoginScreen
 import com.example.droopy.ui.login.ui.LoginViewModel
 import com.example.droopy.ui.searches.SearchInfoScreen
@@ -31,11 +33,10 @@ class MainActivity : ComponentActivity() {
                         startDestination = "login"
                     ) {
                         composable("login") {
-                            LoginScreen(LoginViewModel(), navigateToSearchInfo = { navController.navigate("searchInfo") })
+                            LoginScreen(LoginViewModel(), { searchId -> navController.navigate("searchInfo/$searchId") })
                         }
-                        composable("searchInfo") {
-                            //TODO: add argument
-                            SearchInfoScreen(searchId = "test")
+                        composable("searchInfo/{searchId}",arguments = listOf(navArgument("searchId", { type = NavType.StringType }))) {
+                             backStackEntry -> SearchInfoScreen(searchId = backStackEntry.arguments?.getString("searchId")!!)
                         }
                     }
                 }

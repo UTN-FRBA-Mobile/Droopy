@@ -27,7 +27,7 @@ import com.example.droopy.R
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, navigateToSearchInfo: () -> Unit) {
+fun LoginScreen(viewModel: LoginViewModel, navigateToSearchInfo: (String) -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
@@ -38,7 +38,7 @@ fun LoginScreen(viewModel: LoginViewModel, navigateToSearchInfo: () -> Unit) {
 }
 
 @Composable
-fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToSearchInfo: () -> Unit) {
+fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToSearchInfo: (String) -> Unit) {
     val email: String by viewModel.email.observeAsState(initial = "")
     val password: String by viewModel.password.observeAsState(initial = "")
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
@@ -60,7 +60,7 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToSearchInfo: (
             LoginButton(loginEnable) {
                 coroutineScope.launch {
                     viewModel.onLoginSelected()
-                    navigateToSearchInfo()
+                    navigateToSearchInfo("searchId123")
                 }
             }
         }
