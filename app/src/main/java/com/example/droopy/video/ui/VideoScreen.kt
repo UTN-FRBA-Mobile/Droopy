@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.droopy
+package com.example.droopy.video.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -8,12 +8,9 @@ import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.util.Log
 import android.view.TextureView
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -24,6 +21,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,43 +31,47 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
 import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.video.VideoCanvas
+import kotlinx.coroutines.launch
 
 private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA)
 
-class VideoActivity : ComponentActivity() {
-
-    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        // This should be remembered state subscribed from ViewModel and from API
-        val channelName = "kotlin"
-
-        setContent {
-            Scaffold {
-                UIRequirePermissions(
-                    permissions = permissions,
-                    onPermissionGranted = {
-                        CallScreen(channelName)
-                    },
-                    onPermissionDenied = {
-                        AlertScreen(it)
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun VideoScreen(viewModel: VideoViewModel) {
+    val token: String by viewModel.token.observeAsState(initial = "")
+    val channelName: String by viewModel.channel.observeAsState(initial = "")
+    val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = true)
+        UIRequirePermissions(
+            permissions = permissions,
+            onPermissionGranted = {
+                if(token == "") {
+                    val coroutineScope = rememberCoroutineScope()
+                    coroutineScope.launch {
+                        viewModel.onVideoInitialized("1")
                     }
-                )
+                }
+                if(token != "") {
+                    CallScreen(token, channelName)
+                } else {
+                    if(isLoading) {
+                        Box(Modifier.fillMaxSize()) {
+                            CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        }
+                    }
+                }
+            },
+            onPermissionDenied = {
+                AlertScreen(it)
             }
-        }
-    }
+        )
 }
 
 @Composable
-private fun CallScreen(channelName: String) {
+private fun CallScreen(token: String, channelName: String) {
     val context = LocalContext.current
     Log.d(TAG, "Initializing calling screen")
 
@@ -84,7 +86,12 @@ private fun CallScreen(channelName: String) {
     val mEngine = remember {
         initEngine(context, object : IRtcEngineEventHandler() {
             override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
-                Log.d(TAG, "channel:$channel,uid:$uid,elapsed:$elapsed")
+                Log.d(TAG, "channel joined::::$channel,uid:$uid,elapsed:$elapsed")
+            }
+
+            override fun onError(err: Int) {
+                super.onError(err)
+                Log.d(TAG, "error::: " + err.toString())
             }
 
             override fun onUserJoined(uid: Int, elapsed: Int) {
@@ -102,9 +109,11 @@ private fun CallScreen(channelName: String) {
             }
 
 
-        }, channelName, "Broadcaster")
+        }, channelName, "Broadcaster", token)
     }
-        mEngine.setupLocalVideo(VideoCanvas(localSurfaceView, Constants.RENDER_MODE_FIT, 0))
+
+
+    mEngine.setupLocalVideo(VideoCanvas(localSurfaceView, Constants.RENDER_MODE_FIT, 0))
     Box(Modifier.fillMaxSize()) {
         localSurfaceView?.let { local ->
             AndroidView(factory = { local }, Modifier.fillMaxSize())
@@ -142,7 +151,7 @@ private fun RemoteView(remoteListInfo: Map<Int, TextureView?>, mEngine: RtcEngin
     }
 }
 
-fun initEngine(current: Context, eventHandler: IRtcEngineEventHandler, channelName: String, userRole: String): RtcEngine =
+fun initEngine(current: Context, eventHandler: IRtcEngineEventHandler, channelName: String, userRole: String, token: String): RtcEngine =
     RtcEngine.create(current, "a997ba8743d44cf8bc3bec156c7fe7f1", eventHandler).apply {
         enableVideo()
         setChannelProfile(1)
@@ -151,7 +160,7 @@ fun initEngine(current: Context, eventHandler: IRtcEngineEventHandler, channelNa
         } else {
             setClientRole(0)
         }
-        joinChannel("007eJxTYGD2tLNeepblTbUK31HNx/YlFuedilViFRSEdUOm3Dj5pkiBIdHS0jwp0cLcxDjFxCQ5zSIp2TgpNdnQ1CzZPC3VPM1QkT86pSGQkcFU8QsDIxSC+GwM2fklOZl5DAwAlY8dFg==", channelName, "", 0)
+        var joined = joinChannel(token, channelName, "", 0)
     }
 
 @Composable
@@ -161,7 +170,9 @@ private fun UserControls(mEngine: RtcEngine) {
     val activity = (LocalContext.current as? Activity)
 
     Row(
-        modifier = Modifier.fillMaxSize().padding(bottom = 50.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 50.dp),
         Arrangement.SpaceEvenly,
         Alignment.Bottom
     ) {
