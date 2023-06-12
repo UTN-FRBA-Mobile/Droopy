@@ -2,7 +2,6 @@ package com.example.droopy.ui.searches
 
 import android.content.Intent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -15,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.droopy.R
 import com.example.droopy.models.SearchInfo
@@ -49,7 +47,7 @@ private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
     Card(modifier.padding(4.dp), elevation = 8.dp) {
         Column(Modifier.padding(16.dp)) {
             Image(
-                painter = painterResource(id = R.drawable.manifestacion),
+                painter = painterResource(id = searchInfo.image),
                 contentDescription = "Header"
             )
             Text(
@@ -94,7 +92,7 @@ private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
                     .padding(4.dp)
                     .align(CenterHorizontally),
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
-            ) { Text(text = "Postularme") }
+            ) { Text(text = "Transmitir") }
         }
     }
 }

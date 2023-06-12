@@ -7,9 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.droopy.models.SearchInfo
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDateTime
-import java.util.Date
+import com.example.droopy.R
 
 val searchInfoMock =
     SearchInfo(
@@ -18,7 +17,8 @@ val searchInfoMock =
         "Queremos capturar la concentración de manifestantes que se extienden desde la subida a la autopista en 9 de Julio y San Juan, hasta el Obelisco.",
         "CREATED",
         LocalDateTime.now(),
-        true
+        true,
+        R.drawable.manifestacion
     )
 
 val searchInfoMock2 =
@@ -28,7 +28,8 @@ val searchInfoMock2 =
         "Incidentes en la recibida de Ingenieros de la UTN",
         "CREATED",
         LocalDateTime.now(),
-        true
+        true,
+        R.drawable.utn_frba
     )
 
 class SearchInfoViewModel : ViewModel() {

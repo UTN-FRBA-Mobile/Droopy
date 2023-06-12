@@ -1,5 +1,6 @@
 package com.example.droopy.models
 
+import android.media.Image
 import java.time.LocalDateTime
 
 data class SearchInfo(
@@ -8,5 +9,6 @@ data class SearchInfo(
     val description: String,
     val status: String,
     val startDate: LocalDateTime,
-    val isPaid: Boolean
+    val isPaid: Boolean,
+    val image: Int
 )
