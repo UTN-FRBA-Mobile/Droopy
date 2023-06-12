@@ -24,9 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.droopy.R
+import com.example.droopy.ui.maps.MapsActivity
 import kotlinx.coroutines.launch
 
 @Composable
@@ -67,7 +68,7 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
                     mContext.startActivity(
                         Intent(
                             mContext,
-                            com.example.droopy.ui.maps.MapsActivity::class.java
+                            MapsActivity::class.java
                         )
                     )
                 }
@@ -97,9 +98,11 @@ fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
 @Composable
 fun PasswordField(password: String, onTextFieldChange: (String) -> Unit) {
     TextField(
-        value = password, onValueChange = { onTextFieldChange(it) },
-        placeholder = { Text(text = "Contrasenia") },
+        value = password,
+        onValueChange = onTextFieldChange,
+        placeholder = { Text(text = "Contraseña") },
         modifier = Modifier.fillMaxWidth(),
+        visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         singleLine = true,
         maxLines = 1,
@@ -111,6 +114,7 @@ fun PasswordField(password: String, onTextFieldChange: (String) -> Unit) {
         )
     )
 }
+
 
 @Composable
 fun EmailField(email: String, onTextFieldChange: (String) -> Unit) {
