@@ -35,6 +35,7 @@ import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.video.VideoCanvas
+import io.agora.rtm.*
 import kotlinx.coroutines.launch
 
 private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA)
@@ -42,20 +43,22 @@ private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.per
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun VideoScreen(viewModel: VideoViewModel) {
-    val token: String by viewModel.token.observeAsState(initial = "")
+    val videoToken: String by viewModel.videoToken.observeAsState(initial = "")
+    val chatToken: String by viewModel.chatToken.observeAsState(initial = "")
     val channelName: String by viewModel.channel.observeAsState(initial = "")
     val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = true)
         UIRequirePermissions(
             permissions = permissions,
             onPermissionGranted = {
-                if(token == "") {
+                if(videoToken == "") {
                     val coroutineScope = rememberCoroutineScope()
                     coroutineScope.launch {
                         viewModel.onVideoInitialized("1")
                     }
                 }
-                if(token != "") {
-                    CallScreen(token, channelName)
+                if(videoToken != "") {
+                    ChatModule(chatToken, channelName)
+                    //CallScreen(videoToken, channelName)
                 } else {
                     if(isLoading) {
                         Box(Modifier.fillMaxSize()) {
@@ -71,7 +74,37 @@ fun VideoScreen(viewModel: VideoViewModel) {
 }
 
 @Composable
-private fun CallScreen(token: String, channelName: String) {
+private fun ChatModule(chatToken: String, channelName: String) {
+    Log.d(TAG, "CHAT MODULE")
+    Log.d(TAG, "JOINING $chatToken, CHANNEL $channelName")
+    val context = LocalContext.current
+    val chatEngine: RtmClient = remember{
+     initChatEngine(context, object: RtmClientListener {
+         override fun onMessageReceived(message: RtmMessage?, peer: String?) {
+             TODO("Not yet implemented")
+         }
+
+         override fun onTokenExpired() {
+             TODO("Not yet implemented")
+         }
+
+         override fun onTokenPrivilegeWillExpire() {
+             TODO("Not yet implemented")
+         }
+
+         override fun onConnectionStateChanged(newState: Int, oldState: Int) {
+             TODO("Not yet implemented")
+         }
+
+         override fun onPeersOnlineStatusChanged(p0: MutableMap<String, Int>?) {
+             TODO("Not yet implemented")
+         }
+     }, channelName, "1", chatToken)
+    }
+}
+
+@Composable
+private fun CallScreen(videToken: String, channelName: String) {
     val context = LocalContext.current
     Log.d(TAG, "Initializing calling screen")
 
@@ -83,15 +116,15 @@ private fun CallScreen(token: String, channelName: String) {
         mutableStateOf(mapOf<Int, TextureView?>())
     }
 
-    val mEngine = remember {
-        initEngine(context, object : IRtcEngineEventHandler() {
+    val videoEngine = remember {
+        initVideoEngine(context, object : IRtcEngineEventHandler() {
             override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
                 Log.d(TAG, "channel joined::::$channel,uid:$uid,elapsed:$elapsed")
             }
 
             override fun onError(err: Int) {
                 super.onError(err)
-                Log.d(TAG, "error::: " + err.toString())
+                Log.d(TAG, "error::: $err")
             }
 
             override fun onUserJoined(uid: Int, elapsed: Int) {
@@ -109,17 +142,17 @@ private fun CallScreen(token: String, channelName: String) {
             }
 
 
-        }, channelName, "Broadcaster", token)
+        }, channelName, "Broadcaster", videToken)
     }
 
 
-    mEngine.setupLocalVideo(VideoCanvas(localSurfaceView, Constants.RENDER_MODE_FIT, 0))
+    videoEngine.setupLocalVideo(VideoCanvas(localSurfaceView, Constants.RENDER_MODE_FIT, 0))
     Box(Modifier.fillMaxSize()) {
         localSurfaceView?.let { local ->
             AndroidView(factory = { local }, Modifier.fillMaxSize())
         }
-        RemoteView(remoteListInfo = remoteUserMap, mEngine = mEngine)
-        UserControls(mEngine = mEngine)
+        RemoteView(remoteListInfo = remoteUserMap, mEngine = videoEngine)
+        UserControls(videoEngine = videoEngine)
     }
 
 }
@@ -151,7 +184,7 @@ private fun RemoteView(remoteListInfo: Map<Int, TextureView?>, mEngine: RtcEngin
     }
 }
 
-fun initEngine(current: Context, eventHandler: IRtcEngineEventHandler, channelName: String, userRole: String, token: String): RtcEngine =
+fun initVideoEngine(current: Context, eventHandler: IRtcEngineEventHandler, channelName: String, userRole: String, token: String): RtcEngine =
     RtcEngine.create(current, "a997ba8743d44cf8bc3bec156c7fe7f1", eventHandler).apply {
         enableVideo()
         setChannelProfile(1)
@@ -160,11 +193,58 @@ fun initEngine(current: Context, eventHandler: IRtcEngineEventHandler, channelNa
         } else {
             setClientRole(0)
         }
-        var joined = joinChannel(token, channelName, "", 0)
+        joinChannel(token, channelName, "", 0)
+    }
+
+fun initChatEngine(current: Context, eventListener: RtmClientListener, channelName: String, userId: String, chatToken: String): RtmClient =
+    RtmClient.createInstance(current, "a997ba8743d44cf8bc3bec156c7fe7f1", eventListener).apply{
+        Log.d(TAG, "CHAT TOKEN $chatToken USER: $userId")
+        login(chatToken, userId, object: ResultCallback<Void> {
+            override fun onSuccess(p0: Void?) {
+                Log.d(TAG, "SUCCESS LOGIN $p0")
+                TODO("Not yet implemented")
+            }
+
+            override fun onFailure(p0: ErrorInfo?) {
+                Log.d(TAG, "FAILED $p0")
+                TODO("Not yet implemented")
+            }
+        })
+        var channel = createChannel("chat-$channelName", object: RtmChannelListener {
+            override fun onAttributesUpdated(p0: MutableList<RtmChannelAttribute>?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onMemberCountUpdated(p0: Int) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onMemberJoined(p0: RtmChannelMember?) {
+                Log.d(TAG,"Member joined $p0")
+                TODO("Not yet implemented")
+            }
+
+            override fun onMemberLeft(p0: RtmChannelMember?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onMessageReceived(p0: RtmMessage?, p1: RtmChannelMember?) {
+                Log.d(TAG, "Message received ${p0?.text}")
+                TODO("Not yet implemented")
+            }
+        }).join(object: ResultCallback<Void> {
+            override fun onSuccess(p0: Void?) {
+                Log.d(TAG, "JOINED SUCCESS $p0")
+            }
+
+            override fun onFailure(p0: ErrorInfo?) {
+                Log.d(TAG, "JOINED FAILED $p0")
+            }
+        })
     }
 
 @Composable
-private fun UserControls(mEngine: RtcEngine) {
+private fun UserControls(videoEngine: RtcEngine) {
     var muted by remember { mutableStateOf(false) }
     var videoDisabled by remember { mutableStateOf(false) }
     val activity = (LocalContext.current as? Activity)
@@ -179,7 +259,7 @@ private fun UserControls(mEngine: RtcEngine) {
         OutlinedButton(
             onClick = {
                 muted = !muted
-                mEngine.muteLocalAudioStream(muted)
+                videoEngine.muteLocalAudioStream(muted)
             },
             shape = CircleShape,
             modifier = Modifier.size(50.dp),
@@ -194,7 +274,7 @@ private fun UserControls(mEngine: RtcEngine) {
         }
         OutlinedButton(
             onClick = {
-                mEngine.leaveChannel()
+                videoEngine.leaveChannel()
                 activity?.finish()
             },
             shape = CircleShape,
@@ -208,7 +288,7 @@ private fun UserControls(mEngine: RtcEngine) {
         OutlinedButton(
             onClick = {
                 videoDisabled = !videoDisabled
-                mEngine.muteLocalVideoStream(videoDisabled)
+                videoEngine.muteLocalVideoStream(videoDisabled)
             },
             shape = CircleShape,
             modifier = Modifier.size(50.dp),
