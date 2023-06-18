@@ -33,7 +33,7 @@ class VideoViewModel : ViewModel() {
         //POST TO film_postulation/filmPostulationId/video-call with bearer token of logged user
         // That endpoint will return the videoToken and the chatToken.
         
-        onFetchedToken("006a997ba8743d44cf8bc3bec156c7fe7f1IACBg/mTqxChQlCRHgoSSqDWRBxAmk07PDLpdlqeYIyy8zgbtvMNvtUaEACkaSaMQP2OZAEAAQDQP0hv", "006a997ba8743d44cf8bc3bec156c7fe7f1IABV1JfDXx2zwwx5zes2aXZXMxBqJSwZpf/S7WWBlP9Ofrfv3IMAAAAAEADtdxAUeKaPZAEA6AM45khv"  ,"4")
+        onFetchedToken("006a997ba8743d44cf8bc3bec156c7fe7f1IADvXWE43kpPN6ugi9LooO2QVbbC/w6ecnFfLXk3W/p7lDgbtvO379yDIgA8qo3ji3iQZAQAAQADtUlvAgADtUlvAwADtUlvBAADtUlv" ,"006a997ba8743d44cf8bc3bec156c7fe7f1IAAPLRx0/fJ1W5t0EdnuMRSscQctldv4T9Q47oIWvrPBjrfv3IMAAAAAEAA8qo3ji3iQZAEA6AMDtUlv" ,"4")
 
        // Pendiente
 

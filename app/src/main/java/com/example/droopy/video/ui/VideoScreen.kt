@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
@@ -26,8 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
@@ -37,6 +40,8 @@ import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtm.*
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA)
 
@@ -57,8 +62,9 @@ fun VideoScreen(viewModel: VideoViewModel) {
                     }
                 }
                 if(videoToken != "") {
+                    CallScreen(videoToken, channelName)
+                    Spacer(modifier = Modifier.height(16.dp))
                     ChatModule(chatToken, channelName)
-                    //CallScreen(videoToken, channelName)
                 } else {
                     if(isLoading) {
                         Box(Modifier.fillMaxSize()) {
@@ -75,10 +81,9 @@ fun VideoScreen(viewModel: VideoViewModel) {
 
 @Composable
 private fun ChatModule(chatToken: String, channelName: String) {
-    Log.d(TAG, "CHAT MODULE")
-    Log.d(TAG, "JOINING $chatToken, CHANNEL $channelName")
     val context = LocalContext.current
-    val chatEngine: RtmClient = remember{
+    val messagesReceived: MutableList<String> = remember { mutableStateListOf<String>() }
+    val chatEngine: RtmClient = remember {
      initChatEngine(context, object: RtmClientListener {
          override fun onMessageReceived(message: RtmMessage?, peer: String?) {
              TODO("Not yet implemented")
@@ -99,7 +104,52 @@ private fun ChatModule(chatToken: String, channelName: String) {
          override fun onPeersOnlineStatusChanged(p0: MutableMap<String, Int>?) {
              TODO("Not yet implemented")
          }
-     }, channelName, "1", chatToken)
+     }, channelName, "1", chatToken) { messageReceived ->
+         if (messageReceived != null) {
+             val currentDateTime = LocalDateTime.now()
+             messagesReceived.add("${currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))} - $messageReceived")
+             if(messagesReceived.size >= 5) {
+                 messagesReceived.removeAt(0)
+             }
+         }
+     }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Chat",
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn {
+            items(count = 5) { index ->
+                val message = if (index in messagesReceived.indices) {
+                    messagesReceived[index]
+                } else {
+                    ""
+                }
+                Text(
+                    text = message,
+                    fontSize = 16.sp,
+                )
+            }
+        }
     }
 }
 
@@ -146,10 +196,10 @@ private fun CallScreen(videToken: String, channelName: String) {
     }
 
 
-    videoEngine.setupLocalVideo(VideoCanvas(localSurfaceView, Constants.RENDER_MODE_FIT, 0))
-    Box(Modifier.fillMaxSize()) {
+    videoEngine.setupLocalVideo(VideoCanvas(localSurfaceView, Constants.RENDER_MODE_ADAPTIVE, 0))
+    Box() {
         localSurfaceView?.let { local ->
-            AndroidView(factory = { local }, Modifier.fillMaxSize())
+            AndroidView(factory = { local })
         }
         RemoteView(remoteListInfo = remoteUserMap, mEngine = videoEngine)
         UserControls(videoEngine = videoEngine)
@@ -163,7 +213,6 @@ private fun RemoteView(remoteListInfo: Map<Int, TextureView?>, mEngine: RtcEngin
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(fraction = 0.2f)
             .horizontalScroll(state = rememberScrollState())
     ) {
         remoteListInfo.forEach { entry ->
@@ -193,52 +242,48 @@ fun initVideoEngine(current: Context, eventHandler: IRtcEngineEventHandler, chan
         } else {
             setClientRole(0)
         }
-        joinChannel(token, channelName, "", 0)
+        joinChannelWithUserAccount(token, channelName, "1")
     }
 
-fun initChatEngine(current: Context, eventListener: RtmClientListener, channelName: String, userId: String, chatToken: String): RtmClient =
+fun initChatEngine(current: Context, eventListener: RtmClientListener, channelName: String, userId: String, chatToken: String, onMessageReceived: (String?) -> Unit): RtmClient =
     RtmClient.createInstance(current, "a997ba8743d44cf8bc3bec156c7fe7f1", eventListener).apply{
-        Log.d(TAG, "CHAT TOKEN $chatToken USER: $userId")
         login(chatToken, userId, object: ResultCallback<Void> {
             override fun onSuccess(p0: Void?) {
                 Log.d(TAG, "SUCCESS LOGIN $p0")
-                TODO("Not yet implemented")
-            }
+                createChannel("chat-$channelName", object: RtmChannelListener {
+                    override fun onAttributesUpdated(p0: MutableList<RtmChannelAttribute>?) {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun onMemberCountUpdated(newCount: Int) {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun onMemberJoined(peer: RtmChannelMember?) {
+                        Log.d(TAG,"Member joined $peer")
+                    }
+
+                    override fun onMemberLeft(peer: RtmChannelMember?) {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun onMessageReceived(message: RtmMessage?, peer: RtmChannelMember?) {
+                        onMessageReceived(message?.text)
+                        TODO("Not yet implemented")
+                    }
+                }).join(object: ResultCallback<Void> {
+                    override fun onSuccess(p0: Void?) {
+                        Log.d(TAG, "JOINED SUCCESS $p0")
+                    }
+
+                    override fun onFailure(p0: ErrorInfo?) {
+                        Log.d(TAG, "JOINED FAILED $p0")
+                    }
+                })            }
 
             override fun onFailure(p0: ErrorInfo?) {
                 Log.d(TAG, "FAILED $p0")
                 TODO("Not yet implemented")
-            }
-        })
-        var channel = createChannel("chat-$channelName", object: RtmChannelListener {
-            override fun onAttributesUpdated(p0: MutableList<RtmChannelAttribute>?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onMemberCountUpdated(p0: Int) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onMemberJoined(p0: RtmChannelMember?) {
-                Log.d(TAG,"Member joined $p0")
-                TODO("Not yet implemented")
-            }
-
-            override fun onMemberLeft(p0: RtmChannelMember?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onMessageReceived(p0: RtmMessage?, p1: RtmChannelMember?) {
-                Log.d(TAG, "Message received ${p0?.text}")
-                TODO("Not yet implemented")
-            }
-        }).join(object: ResultCallback<Void> {
-            override fun onSuccess(p0: Void?) {
-                Log.d(TAG, "JOINED SUCCESS $p0")
-            }
-
-            override fun onFailure(p0: ErrorInfo?) {
-                Log.d(TAG, "JOINED FAILED $p0")
             }
         })
     }
@@ -287,19 +332,14 @@ private fun UserControls(videoEngine: RtcEngine) {
         }
         OutlinedButton(
             onClick = {
-                videoDisabled = !videoDisabled
-                videoEngine.muteLocalVideoStream(videoDisabled)
+                videoEngine.switchCamera()
             },
             shape = CircleShape,
             modifier = Modifier.size(50.dp),
             contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.outlinedButtonColors(backgroundColor = if (videoDisabled) Color.Blue else Color.White)
+            colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.White)
         ) {
-            if (videoDisabled) {
-                Icon(Icons.Rounded.VideocamOff, contentDescription = "Tap to enable Video", tint = Color.White)
-            } else {
-                Icon(Icons.Rounded.Videocam, contentDescription = "Tap to disable Video", tint = Color.Blue)
-            }
+            Icon(Icons.Rounded.SwitchCamera, contentDescription = "Tap to switch camera", tint = Color.Blue)
         }
     }
 }
