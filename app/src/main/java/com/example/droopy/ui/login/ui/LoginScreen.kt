@@ -48,7 +48,9 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
     val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = false)
     val coroutineScope = rememberCoroutineScope()
+    val errorMessage: String by viewModel.errorMessage.observeAsState(initial = "")
     val mContext = LocalContext.current
+    val token: String by viewModel.token.observeAsState(initial = "")
 
     if (isLoading) {
         Box(Modifier.fillMaxSize()) {
@@ -64,15 +66,11 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
             Spacer(modifier = Modifier.padding(16.dp))
             LoginButton(loginEnable) {
                 coroutineScope.launch {
-                    viewModel.onLoginSelected()
-                    mContext.startActivity(
-                        Intent(
-                            mContext,
-                            MapsActivity::class.java
-                        )
-                    )
+                    viewModel.login()
+                    viewModel.onLoginSelected(mContext, token)
                 }
             }
+            Text(errorMessage)
         }
     }
 }
