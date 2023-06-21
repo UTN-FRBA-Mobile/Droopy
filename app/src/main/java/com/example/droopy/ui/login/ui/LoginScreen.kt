@@ -1,5 +1,6 @@
 package com.example.droopy.ui.login.ui
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,11 +21,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.droopy.R
+import com.example.droopy.ui.maps.MapsActivity
 import kotlinx.coroutines.launch
 
 @Composable
@@ -45,6 +48,9 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
     val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = false)
     val coroutineScope = rememberCoroutineScope()
+    val errorMessage: String by viewModel.errorMessage.observeAsState(initial = "")
+    val mContext = LocalContext.current
+    val token: String by viewModel.token.observeAsState(initial = "")
 
     if (isLoading) {
         Box(Modifier.fillMaxSize()) {
@@ -60,9 +66,11 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel) {
             Spacer(modifier = Modifier.padding(16.dp))
             LoginButton(loginEnable) {
                 coroutineScope.launch {
-                    viewModel.onLoginSelected()
+                    viewModel.login()
+                    viewModel.onLoginSelected(mContext, token)
                 }
             }
+            Text(errorMessage)
         }
     }
 }
@@ -88,9 +96,11 @@ fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
 @Composable
 fun PasswordField(password: String, onTextFieldChange: (String) -> Unit) {
     TextField(
-        value = password, onValueChange = { onTextFieldChange(it) },
-        placeholder = { Text(text = "Contrasenia") },
+        value = password,
+        onValueChange = onTextFieldChange,
+        placeholder = { Text(text = "Contraseña") },
         modifier = Modifier.fillMaxWidth(),
+        visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         singleLine = true,
         maxLines = 1,
@@ -102,6 +112,7 @@ fun PasswordField(password: String, onTextFieldChange: (String) -> Unit) {
         )
     )
 }
+
 
 @Composable
 fun EmailField(email: String, onTextFieldChange: (String) -> Unit) {
