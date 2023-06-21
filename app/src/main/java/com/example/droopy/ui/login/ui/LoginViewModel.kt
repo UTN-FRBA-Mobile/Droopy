@@ -74,7 +74,6 @@ class LoginViewModel : ViewModel() {
             withContext(Dispatchers.Main) {
                 if (response.token != null) {
                     _token.value = response.token
-                    println("PRIMER TOKEN: $_token")
                 } else {
                     _errorMessage.value = "No se recibió un token válido"
                 }
