@@ -3,21 +3,26 @@ package com.example.droopy.ui.searches
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.droopy.R
 import com.example.droopy.models.FilmSearch
 import com.example.droopy.models.SearchInfo
@@ -37,12 +42,16 @@ fun SearchInfoScreen(searchId: String) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        searchInfoViewModel.searchInfoState.value?.let { searchInfo ->
-            // Compose code to display the movie data in the Box
-            SearchInfoCard(Modifier.align(Alignment.Center), searchInfo)
-        } ?: run {
-            // When search info is null
-            Text(text = "error loading search info")
+        when(val searchInfo = searchInfoState) {
+            null -> {
+                // While loading or on error
+                // TODO: add a loading
+                Text(text = "Loading or error...")
+            }
+            else -> {
+                // On success
+                SearchInfoCard(Modifier.align(Alignment.Center), searchInfo)
+            }
         }
     }
 }
@@ -51,11 +60,13 @@ fun SearchInfoScreen(searchId: String) {
 private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
     val status = Utils.translateSearchInfoStatus(searchInfo.searchStatus)
     val mContext = LocalContext.current
+
     Card(modifier.padding(4.dp), elevation = 8.dp) {
         Column(Modifier.padding(16.dp)) {
             AsyncImage(
-                model = searchInfo.imageUrl,
-                contentDescription = "Header"
+                contentDescription = " HEADER ",
+                model = searchInfo.placePhoto,
+                modifier = Modifier.fillMaxWidth().height(300.dp)
             )
             Text(
                 text = searchInfo.title,

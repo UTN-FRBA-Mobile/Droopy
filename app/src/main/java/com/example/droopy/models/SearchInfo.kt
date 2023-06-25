@@ -17,7 +17,7 @@ data class SearchInfo(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val isPaid: Boolean,
-    val imageUrl: String,
+    val placePhoto: String,
 ){
     val searchStatus: SearchStatus
         get() = when (status) {

@@ -72,6 +72,7 @@ class SearchInfoViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val search = service.getFilmSearchById(searchId, "Bearer $token")
+                Log.d(this.javaClass.name, "Fetched search info: $search")
                 _searchInfoState.value = search
             } catch (e: Exception) {
                 Log.e(this.javaClass.name, "Error fetching search info $searchId with token $token", e)
