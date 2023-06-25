@@ -20,7 +20,7 @@
             android:theme="@style/Theme.Droopy" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
+            android:value="AIzaSyAdgWrscsRRfQPoQtKtU0IZQKmRCLlTYb0" />
 
         <activity
             android:name=".ui.login.LoginActivity"

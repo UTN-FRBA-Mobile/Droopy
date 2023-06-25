@@ -1,10 +1,12 @@
 package com.example.droopy.ui.searches
 
+import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -15,7 +17,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.droopy.R
+import com.example.droopy.models.FilmSearch
 import com.example.droopy.models.SearchInfo
 import com.example.droopy.ui.maps.MapsActivity
 import com.example.droopy.utils.Utils
@@ -23,7 +27,10 @@ import com.example.droopy.utils.Utils
 @Composable
 fun SearchInfoScreen(searchId: String) {
     val searchInfoViewModel = remember { SearchInfoViewModel() }
-    searchInfoViewModel.getSearchInfoById(searchId)
+    val token = LocalContext.current.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("token", "")
+    searchInfoViewModel.getSearchInfoById(searchId, token!!)
+
+    val searchInfoState by searchInfoViewModel.searchInfoState.collectAsState()
 
     Box(
         Modifier
@@ -42,12 +49,12 @@ fun SearchInfoScreen(searchId: String) {
 
 @Composable
 private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
-    val status = Utils.translateSearchInfoStatus(searchInfo.status)
+    val status = Utils.translateSearchInfoStatus(searchInfo.searchStatus)
     val mContext = LocalContext.current
     Card(modifier.padding(4.dp), elevation = 8.dp) {
         Column(Modifier.padding(16.dp)) {
-            Image(
-                painter = painterResource(id = searchInfo.image),
+            AsyncImage(
+                model = searchInfo.imageUrl,
                 contentDescription = "Header"
             )
             Text(
@@ -70,8 +77,10 @@ private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
                 }"
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = Utils.toReadableString(searchInfo.startDate))
+            Text(text = Utils.toReadableString(searchInfo.createdAt))
             Spacer(modifier = Modifier.height(16.dp))
+            // TODO: add some use about last updated at X minutes
+            // TODO: add some info about requester company
             Button(
                 onClick = {
                     mContext.startActivity(

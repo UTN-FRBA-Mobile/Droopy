@@ -14,8 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.example.droopy.ui.maps.ui.theme.DroopyTheme
@@ -80,10 +78,12 @@ fun MyGoogleMaps(navController: NavHostController, mapsViewModel: MapsViewModel,
     LaunchedEffect(Unit) {
         mapsViewModel.fetchFilmSearchConsumer(token)
     }
-    val filmSearchesResponse by mapsViewModel.filmSearchesResponse.observeAsState()
+    val filmSearchesResponse by mapsViewModel.filmSearches.observeAsState()
     filmSearchesResponse?.let {
         lat.value = it.getOrNull(0)?.location?.latitude
     }
+
+    // todo: use device location
     val cameraPosition = CameraPosition(
         LatLng(-34.598665, -58.420281),
         12f,
@@ -101,7 +101,7 @@ fun MyGoogleMaps(navController: NavHostController, mapsViewModel: MapsViewModel,
                 val markerPosition = LatLng(latitude, longitude)
                 val markerTitle = filmSearch.location.address ?: ""
                 Marker(position = markerPosition, title = markerTitle, onClick = {
-                    navController.navigate("searchInfo/1")
+                    navController.navigate("searchInfo/${filmSearch.uuid}")
                     true
                 })
             }
