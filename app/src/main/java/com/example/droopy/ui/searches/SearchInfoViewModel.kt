@@ -4,15 +4,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.droopy.models.SearchInfo
-import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import com.example.droopy.ui.api.ApiService
-import com.google.gson.*
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.reflect.Type
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 val searchInfoMock =
@@ -47,7 +50,7 @@ class SearchInfoViewModel : ViewModel() {
     val error = MutableStateFlow<String?>(null)
     val searchInfoState: StateFlow<SearchInfo?> get() = _searchInfoState
 
-    private val baseUrl = "http://192.168.0.27:3001/api/"
+    private val baseUrl = "http://192.168.0.59:3001/api/"
 
     val gson = GsonBuilder()
         .registerTypeAdapter(LocalDateTime::class.java, object : JsonDeserializer<LocalDateTime> {
@@ -82,13 +85,5 @@ class SearchInfoViewModel : ViewModel() {
                 error.value = e.message
             }
         }
-    }
-
-    // TODO: Move this to a repository class
-    private suspend fun fetchSearchById(searchId: String): SearchInfo {
-        if (searchId == "1") {
-            return searchInfoMock
-        }
-        return searchInfoMock2
     }
 }

@@ -21,11 +21,7 @@ class VideoActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         var sharedPreferences: SharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("token", "")
-
-        // @CHOLO ESTO FALTA HACER, DEBERIA SER EL ID DE LA BUSQUEDA SELECCIONADA EN EL MAPA
-        //val selectedFilmSearchId = sharedPreferences.getString("selectedFilmSearchId", "")
-
-        val selectedFilmSearchId = "1"
+        val selectedFilmSearchId = sharedPreferences.getString("selectedFilmSearchId", "")
 
         setContent {
             DroopyTheme {
@@ -40,7 +36,7 @@ class VideoActivity : ComponentActivity() {
                         startDestination = "video"
                     ) {
                         composable("video") {
-                            VideoScreen(VideoViewModel(), selectedFilmSearchId ,token ?: "")
+                            VideoScreen(VideoViewModel(), selectedFilmSearchId?:"" ,token ?: "")
                         }
                     }
                 }

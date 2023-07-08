@@ -2,8 +2,6 @@ package com.example.droopy.ui.searches
 
 import android.content.Context
 import android.content.Intent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -14,21 +12,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
-import com.example.droopy.R
-import com.example.droopy.models.FilmSearch
 import com.example.droopy.models.SearchInfo
 import com.example.droopy.ui.maps.MapsActivity
 import com.example.droopy.utils.Utils
+import com.example.droopy.video.VideoActivity
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -133,7 +126,12 @@ private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
                 ) { Text(text = "Volver") }
                 Button(
-                    onClick = {},
+                    onClick = {
+                        val sharedPreferences = mContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                        sharedPreferences.edit().putString("selectedFilmSearchId", searchInfo.uuid).apply()
+                        val intent = Intent(mContext, VideoActivity::class.java)
+                        mContext.startActivity(intent)
+                    },
                     modifier = Modifier
                         .padding(4.dp)
                         .align(CenterHorizontally),
