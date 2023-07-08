@@ -29,7 +29,6 @@ class MapsViewModel : ViewModel() {
 
             try {
                 val response = apiService.getSearches("Bearer $token")
-                Log.d(ControlsProviderService.TAG, "FETCHING fetchFilmSearchConsumer ${response}")
                 _filmSearchesResponse.value = response
             } catch (e: Exception) {
                 e.printStackTrace()
