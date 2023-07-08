@@ -17,7 +17,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class LoginViewModel : ViewModel() {
-    private val baseUrl = "http://172.16.0.22:3001/api/"
+    private val baseUrl = "http://192.168.0.27:3001/api/"
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
 

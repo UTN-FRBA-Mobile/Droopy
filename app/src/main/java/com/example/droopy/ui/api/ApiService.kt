@@ -30,7 +30,7 @@ interface ApiService {
         @Header("Authorization") authorization: String
     ): Void
 
-    @GET("api/film_search/{uuid}")
+    @GET("film_search/{uuid}")
     suspend fun getFilmSearchById(
         @Path("uuid") filmSearchId: String,
         @Header("Authorization") authorization: String

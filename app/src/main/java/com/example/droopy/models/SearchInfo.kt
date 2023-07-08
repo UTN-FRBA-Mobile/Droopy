@@ -18,7 +18,11 @@ data class SearchInfo(
     val updatedAt: LocalDateTime,
     val isPaid: Boolean,
     val placePhoto: String,
+    val consumer: Consumer,
 ){
+    data class Consumer(val company: Company)
+    data class Company(val identifier: String)
+
     val searchStatus: SearchStatus
         get() = when (status) {
             0 -> SearchStatus.ACCEPTED

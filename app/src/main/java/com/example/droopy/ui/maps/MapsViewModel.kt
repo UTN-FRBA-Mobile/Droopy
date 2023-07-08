@@ -13,7 +13,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MapsViewModel : ViewModel() {
-    private val baseUrl = "http://172.16.0.22:3001/"
+    private val baseUrl = "http://192.168.0.27:3001/api/"
 
     private val _filmSearches = MutableLiveData<List<FilmSearch>>()
     val filmSearches: LiveData<List<FilmSearch>> = _filmSearches

@@ -1,17 +1,11 @@
 package com.example.droopy.ui.searches
 
-import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.droopy.models.SearchInfo
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import com.example.droopy.R
-import com.example.droopy.models.SearchStatus
 import com.example.droopy.ui.api.ApiService
 import com.google.gson.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +24,8 @@ val searchInfoMock =
         LocalDateTime.now(),
         LocalDateTime.now(),
         isPaid = true,
-        "res/drawable/manifestacion.jpeg"
+        "res/drawable/manifestacion.jpeg",
+        SearchInfo.Consumer(SearchInfo.Company("CNN"))
     )
 
 val searchInfoMock2 =
@@ -42,7 +37,8 @@ val searchInfoMock2 =
         LocalDateTime.now(),
         LocalDateTime.now(),
         isPaid = true,
-        "res/drawable/utn_frba.jpeg"
+        "res/drawable/utn_frba.jpeg",
+        SearchInfo.Consumer(SearchInfo.Company("CNN"))
     )
 
 class SearchInfoViewModel : ViewModel() {
@@ -51,7 +47,7 @@ class SearchInfoViewModel : ViewModel() {
     val error = MutableStateFlow<String?>(null)
     val searchInfoState: StateFlow<SearchInfo?> get() = _searchInfoState
 
-    private val baseUrl = "http://172.16.0.22:3001/"
+    private val baseUrl = "http://192.168.0.27:3001/api/"
 
     val gson = GsonBuilder()
         .registerTypeAdapter(LocalDateTime::class.java, object : JsonDeserializer<LocalDateTime> {
@@ -73,13 +69,16 @@ class SearchInfoViewModel : ViewModel() {
     fun getSearchInfoById(searchId: String, token: String) {
         viewModelScope.launch {
             try {
-                isLoading.value = true
                 val search = service.getFilmSearchById(searchId, "Bearer $token")
                 Log.d(this.javaClass.name, "Fetched search info: $search")
                 _searchInfoState.value = search
                 isLoading.value = false
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, "Error fetching search info $searchId with token $token", e)
+                Log.e(
+                    this.javaClass.name,
+                    "Error fetching search info $searchId with token $token",
+                    e
+                )
                 error.value = e.message
             }
         }
@@ -87,7 +86,7 @@ class SearchInfoViewModel : ViewModel() {
 
     // TODO: Move this to a repository class
     private suspend fun fetchSearchById(searchId: String): SearchInfo {
-        if(searchId == "1") {
+        if (searchId == "1") {
             return searchInfoMock
         }
         return searchInfoMock2

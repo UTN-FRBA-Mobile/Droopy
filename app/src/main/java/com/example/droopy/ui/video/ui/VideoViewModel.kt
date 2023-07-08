@@ -12,7 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class VideoViewModel : ViewModel() {
-    private val baseUrl = "http://192.168.0.59:3001/api/"
+    private val baseUrl = "http://192.168.0.27:3001/api/"
 
     private val _videoToken = MutableLiveData<String>()
     val videoToken: LiveData<String> = _videoToken
