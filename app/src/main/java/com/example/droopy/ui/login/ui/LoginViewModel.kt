@@ -10,14 +10,13 @@ import com.example.droopy.models.LoginRequestBody
 import com.example.droopy.ui.api.ApiService
 import com.example.droopy.ui.maps.MapsActivity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class LoginViewModel : ViewModel() {
-    private val baseUrl = "http://192.168.0.142:3001/api/"
+    private val baseUrl = "http://192.168.0.59:3001/api/"
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
 
@@ -42,10 +41,7 @@ class LoginViewModel : ViewModel() {
         _loginEnable.value = isValidEmail(email)
     }
 
-    suspend fun onLoginSelected(context: Context, token: String) {
-        _isLoading.value = true
-        delay(1000)
-        _isLoading.value = false
+    fun onLoginSelected(context: Context, token: String) {
         if (token != "") {
             val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
             sharedPreferences.edit().putString("token", token).apply()

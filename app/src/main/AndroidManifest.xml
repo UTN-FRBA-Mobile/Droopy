@@ -14,13 +14,18 @@
         android:theme="@style/Theme.Droopy"
         tools:targetApi="31">
         <activity
+            android:name=".video.VideoActivity"
+            android:exported="true"
+            android:label="VideoActivity"
+            android:theme="@style/Theme.Droopy" />
+        <activity
             android:name=".ui.maps.MapsActivity"
             android:exported="false"
             android:label="@string/title_activity_maps"
             android:theme="@style/Theme.Droopy" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
+            android:value="AIzaSyAdgWrscsRRfQPoQtKtU0IZQKmRCLlTYb0" />
 
         <activity
             android:name=".ui.login.LoginActivity"
@@ -29,10 +34,16 @@
             android:theme="@style/Theme.Droopy">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+    </application>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 </manifest>
