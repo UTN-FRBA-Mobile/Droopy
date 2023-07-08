@@ -1,7 +1,8 @@
 package com.example.droopy.models
 
-data class FilmSearchesResponse(
-	val location: Location? = null
+data class FilmSearch(
+	val uuid: String,
+	val location: Location? = null,
 )
 
 data class Location(

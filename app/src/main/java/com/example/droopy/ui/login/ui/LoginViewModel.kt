@@ -2,6 +2,7 @@ package com.example.droopy.ui.login.ui
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,7 +17,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class LoginViewModel : ViewModel() {
-    private val baseUrl = "http://192.168.0.59:3001/api/"
+    private val baseUrl = "http://192.168.0.27:3001/api/"
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
 
@@ -70,17 +71,22 @@ class LoginViewModel : ViewModel() {
             withContext(Dispatchers.Main) {
                 if (response.token != null) {
                     _token.value = response.token
+                    Log.i(this.javaClass.name,"PRIMER TOKEN: $_token")
                 } else {
+                    Log.i(this.javaClass.name,"Token is null: $_token")
                     _errorMessage.value = "No se recibió un token válido"
                 }
             }
         } catch (e: HttpException) {
             if (e.code() == 401) {
+                Log.e(this.javaClass.name, "Unauthorized login", e)
                 _errorMessage.value = "Credenciales Inválidas"
             } else {
+                Log.e(this.javaClass.name, "Error hitting login", e)
                 _errorMessage.value = "Error en la petición: ${e.code()}"
             }
         } catch (e: Exception) {
+            Log.e(this.javaClass.name, "Error reaching login", e)
             _errorMessage.value = "Error en la conexión"
         }
     }

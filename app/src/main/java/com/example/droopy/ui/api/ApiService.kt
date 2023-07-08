@@ -10,7 +10,7 @@ interface ApiService {
     @GET("film_search/closests")
     suspend fun getSearches(
         @Header("Authorization") authorization: String
-    ): List<FilmSearchesResponse>
+    ): List<FilmSearch>
 
     @POST("film_postulation/{film_postulation_id}/video-call")
     suspend fun getVideoAndChatTokens(
@@ -29,4 +29,10 @@ interface ApiService {
         @Path("film_search_id") filmSearchId: String,
         @Header("Authorization") authorization: String
     ): Void
+
+    @GET("film_search/{uuid}")
+    suspend fun getFilmSearchById(
+        @Path("uuid") filmSearchId: String,
+        @Header("Authorization") authorization: String
+    ): SearchInfo
 }
