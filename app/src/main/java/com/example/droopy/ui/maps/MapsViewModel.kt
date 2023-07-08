@@ -1,5 +1,7 @@
 package com.example.droopy.ui.maps
 
+import android.service.controls.ControlsProviderService
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,9 +27,8 @@ class MapsViewModel : ViewModel() {
 
             val apiService = retrofit.create(ApiService::class.java)
 
-
             try {
-                val response = apiService.getFilmSearchConsumer(limit = 10, offset = 0, "Bearer $token")
+                val response = apiService.getSearches("Bearer $token")
                 _filmSearches.value = response
             } catch (e: Exception) {
                 e.printStackTrace()

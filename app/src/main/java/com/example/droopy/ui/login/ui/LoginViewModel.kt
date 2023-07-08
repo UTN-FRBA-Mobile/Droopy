@@ -11,7 +11,6 @@ import com.example.droopy.models.LoginRequestBody
 import com.example.droopy.ui.api.ApiService
 import com.example.droopy.ui.maps.MapsActivity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import retrofit2.Retrofit
@@ -43,10 +42,7 @@ class LoginViewModel : ViewModel() {
         _loginEnable.value = isValidEmail(email)
     }
 
-    suspend fun onLoginSelected(context: Context, token: String) {
-        _isLoading.value = true
-        delay(1000)
-        _isLoading.value = false
+    fun onLoginSelected(context: Context, token: String) {
         if (token != "") {
             val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
             sharedPreferences.edit().putString("token", token).apply()
