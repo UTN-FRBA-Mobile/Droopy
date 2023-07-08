@@ -39,15 +39,18 @@ import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.video.VideoCanvas
 import io.agora.rtm.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.runtime.rememberCoroutineScope as rememberCoroutineScope1
 
 private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA)
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun VideoScreen(viewModel: VideoViewModel) {
+fun VideoScreen(viewModel: VideoViewModel, authToken: String) {
     val videoToken: String by viewModel.videoToken.observeAsState(initial = "")
     val chatToken: String by viewModel.chatToken.observeAsState(initial = "")
     val channelName: String by viewModel.channel.observeAsState(initial = "")
@@ -56,13 +59,13 @@ fun VideoScreen(viewModel: VideoViewModel) {
             permissions = permissions,
             onPermissionGranted = {
                 if(videoToken == "") {
-                    val coroutineScope = rememberCoroutineScope()
+                    val coroutineScope = rememberCoroutineScope1()
                     coroutineScope.launch {
-                        viewModel.onVideoInitialized("1")
+                        viewModel.onVideoInitialized("1", authToken)
                     }
                 }
                 if(videoToken != "") {
-                    CallScreen(videoToken, channelName)
+                    CallScreen(videoToken, channelName, viewModel, authToken)
                     Spacer(modifier = Modifier.height(16.dp))
                     ChatModule(chatToken, channelName)
                 } else {
@@ -154,7 +157,7 @@ private fun ChatModule(chatToken: String, channelName: String) {
 }
 
 @Composable
-private fun CallScreen(videToken: String, channelName: String) {
+private fun CallScreen(videToken: String, channelName: String, viewModel: VideoViewModel, authToken: String) {
     val context = LocalContext.current
     Log.d(TAG, "Initializing calling screen")
 
@@ -202,7 +205,7 @@ private fun CallScreen(videToken: String, channelName: String) {
             AndroidView(factory = { local })
         }
         RemoteView(remoteListInfo = remoteUserMap, mEngine = videoEngine)
-        UserControls(videoEngine = videoEngine)
+        UserControls(videoEngine = videoEngine, viewModel, authToken)
     }
 
 }
@@ -289,10 +292,11 @@ fun initChatEngine(current: Context, eventListener: RtmClientListener, channelNa
     }
 
 @Composable
-private fun UserControls(videoEngine: RtcEngine) {
+private fun UserControls(videoEngine: RtcEngine, viewModel: VideoViewModel, authToken: String) {
     var muted by remember { mutableStateOf(false) }
     var videoDisabled by remember { mutableStateOf(false) }
     val activity = (LocalContext.current as? Activity)
+    val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     Row(
         modifier = Modifier
@@ -319,8 +323,10 @@ private fun UserControls(videoEngine: RtcEngine) {
         }
         OutlinedButton(
             onClick = {
+                coroutineScope.launch {
+                    viewModel.onFinish(authToken)
+                }
                 videoEngine.leaveChannel()
-                activity?.finish()
             },
             shape = CircleShape,
             modifier = Modifier.size(70.dp),
@@ -328,7 +334,6 @@ private fun UserControls(videoEngine: RtcEngine) {
             colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Red)
         ) {
             Icon(Icons.Rounded.CallEnd, contentDescription = "Tap to disconnect Call", tint = Color.White)
-
         }
         OutlinedButton(
             onClick = {

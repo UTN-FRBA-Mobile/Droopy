@@ -1,4 +1,4 @@
-package com.example.droopy.video.ui
+package com.example.droopy.ui.video.ui
 
 import android.content.Intent
 import android.os.Bundle

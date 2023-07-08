@@ -1,18 +1,27 @@
 
 package com.example.droopy.video.ui
 
+import android.service.controls.ControlsProviderService.TAG
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.delay
+import com.example.droopy.ui.api.ApiService
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class VideoViewModel : ViewModel() {
+    private val baseUrl = "http://192.168.0.59:3001/api/"
+
     private val _videoToken = MutableLiveData<String>()
     val videoToken: LiveData<String> = _videoToken
+
     private val _channel = MutableLiveData<String>()
     private val _chatToken = MutableLiveData<String>()
+
     val chatToken: LiveData<String> = _chatToken
     val channel: LiveData<String> = _channel
+
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
@@ -22,32 +31,38 @@ class VideoViewModel : ViewModel() {
         _channel.value = channel
     }
 
-    suspend fun onVideoInitialized(filmPostulationId: String) {
+    suspend fun onVideoInitialized(filmSearchId: String, token: String) {
         _isLoading.value = true
-        delay(4000)
-        val filmSearchSelected = 1
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
-        // GET TO film_postulation/accepted?filmSearch=${filmSearchUuid}
+        val apiService = retrofit.create(ApiService::class.java)
+
+        // GET TO film_postulation/accepted?filmSearch=${filmSearchId}
         // That endpoint will return the filmPostulationId that will be the channelName and will be used in below endpoint
+        val filmPostulation = apiService.getFilmPostulation(filmSearchId,"Bearer $token")
 
         //POST TO film_postulation/filmPostulationId/video-call with bearer token of logged user
         // That endpoint will return the videoToken and the chatToken.
-        
-        onFetchedToken("006a997ba8743d44cf8bc3bec156c7fe7f1IADvXWE43kpPN6ugi9LooO2QVbbC/w6ecnFfLXk3W/p7lDgbtvO379yDIgA8qo3ji3iQZAQAAQADtUlvAgADtUlvAwADtUlvBAADtUlv" ,"006a997ba8743d44cf8bc3bec156c7fe7f1IAAPLRx0/fJ1W5t0EdnuMRSscQctldv4T9Q47oIWvrPBjrfv3IMAAAAAEAA8qo3ji3iQZAEA6AMDtUlv" ,"4")
+        val tokens = apiService.getVideoAndChatTokens(filmPostulation.filmPostulationId,"Bearer $token")
+        onFetchedToken(tokens.videoToken, tokens.chatToken, filmPostulation.filmPostulationId)
 
-       // Pendiente
-
-        //1. Pegarle a la api para obtener el video tokenel, chat token y el postulationId y usarlo (para esto se debe mergear con el login para obtener el auth token y el user id logeado si o si )
         //2. Estilizar chat module para ir mostrando los mensajes que van llegando
         //3. Finalizar llamada (pegarle a la api al /finish y volver a la pantalla del mapa que debera recargas las busquedas supuestamete)
-
         _isLoading.value = false
     }
 
-    suspend fun onFinish(filmSearchId: String){
+    suspend fun onFinish(token: String){
         //POST to film_search/filmSearchId/finish
         _isLoading.value = true
-        delay(4000)
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val apiService = retrofit.create(ApiService::class.java)
+        apiService.finishCall(channel.value?: "", token)
         _isLoading.value = false
     }
 }
