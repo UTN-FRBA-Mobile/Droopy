@@ -73,7 +73,7 @@ private fun SearchInfoCard(modifier: Modifier, searchInfo: SearchInfo) {
     val minutesElapsed = ChronoUnit.MINUTES.between(searchInfo.updatedAt, LocalDateTime.now())
 
     Card(modifier.padding(4.dp), elevation = 8.dp) {
-        Box() {
+        Box {
             Text(
                 text = "Solicitud",
                 fontSize = 30.sp,
