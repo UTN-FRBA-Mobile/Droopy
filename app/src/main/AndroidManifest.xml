@@ -16,22 +16,26 @@
         <activity
             android:name=".video.VideoActivity"
             android:exported="true"
+            android:label="VideoActivity"
+            android:theme="@style/Theme.Droopy" />
+        <activity
+            android:name=".ui.maps.MapsActivity"
+            android:exported="false"
             android:label="@string/title_activity_maps"
-            android:theme="@style/Theme.Droopy">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        </activity>
+            android:theme="@style/Theme.Droopy" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="hola" />
+            android:value="AIzaSyAdgWrscsRRfQPoQtKtU0IZQKmRCLlTYb0" />
 
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Droopy">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
     </application>

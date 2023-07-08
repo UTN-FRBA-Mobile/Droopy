@@ -1,12 +1,13 @@
 
 package com.example.droopy.video.ui
 
-import android.service.controls.ControlsProviderService.TAG
-import android.util.Log
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.droopy.ui.api.ApiService
+import com.example.droopy.ui.maps.MapsActivity
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -40,22 +41,16 @@ class VideoViewModel : ViewModel() {
 
         val apiService = retrofit.create(ApiService::class.java)
 
-        // GET TO film_postulation/accepted?filmSearch=${filmSearchId}
         // That endpoint will return the filmPostulationId that will be the channelName and will be used in below endpoint
         val filmPostulation = apiService.getFilmPostulation(filmSearchId,"Bearer $token")
 
-        //POST TO film_postulation/filmPostulationId/video-call with bearer token of logged user
         // That endpoint will return the videoToken and the chatToken.
-        val tokens = apiService.getVideoAndChatTokens(filmPostulation.filmPostulationId,"Bearer $token")
-        onFetchedToken(tokens.videoToken, tokens.chatToken, filmPostulation.filmPostulationId)
-
-        //2. Estilizar chat module para ir mostrando los mensajes que van llegando
-        //3. Finalizar llamada (pegarle a la api al /finish y volver a la pantalla del mapa que debera recargas las busquedas supuestamete)
+        val tokens = apiService.getVideoAndChatTokens(filmPostulation.uuid,"Bearer $token")
+        onFetchedToken(tokens.videoToken, tokens.chatToken, filmPostulation.uuid)
         _isLoading.value = false
     }
 
-    suspend fun onFinish(token: String){
-        //POST to film_search/filmSearchId/finish
+    suspend fun onFinish(token: String, context: Context){
         _isLoading.value = true
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
@@ -63,6 +58,10 @@ class VideoViewModel : ViewModel() {
             .build()
         val apiService = retrofit.create(ApiService::class.java)
         apiService.finishCall(channel.value?: "", token)
+
+        val intent = Intent(context, MapsActivity::class.java)
+        context.startActivity(intent)
+
         _isLoading.value = false
     }
 }

@@ -50,7 +50,7 @@ private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.per
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun VideoScreen(viewModel: VideoViewModel, authToken: String) {
+fun VideoScreen(viewModel: VideoViewModel, filmSearchId: String, authToken: String) {
     val videoToken: String by viewModel.videoToken.observeAsState(initial = "")
     val chatToken: String by viewModel.chatToken.observeAsState(initial = "")
     val channelName: String by viewModel.channel.observeAsState(initial = "")
@@ -61,7 +61,7 @@ fun VideoScreen(viewModel: VideoViewModel, authToken: String) {
                 if(videoToken == "") {
                     val coroutineScope = rememberCoroutineScope1()
                     coroutineScope.launch {
-                        viewModel.onVideoInitialized("1", authToken)
+                        viewModel.onVideoInitialized(filmSearchId, authToken)
                     }
                 }
                 if(videoToken != "") {
@@ -126,13 +126,13 @@ private fun ChatModule(chatToken: String, channelName: String) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(35.dp)
                 .background(Color.White),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopCenter
         ) {
             Text(
                 text = "Chat",
-                color = Color.White,
+                color = Color.Black,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -140,6 +140,13 @@ private fun ChatModule(chatToken: String, channelName: String) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(Color.White),
+            contentAlignment = Alignment.TopStart
+        ) {
         LazyColumn {
             items(count = 5) { index ->
                 val message = if (index in messagesReceived.indices) {
@@ -152,6 +159,7 @@ private fun ChatModule(chatToken: String, channelName: String) {
                     fontSize = 16.sp,
                 )
             }
+        }
         }
     }
 }
@@ -297,6 +305,7 @@ private fun UserControls(videoEngine: RtcEngine, viewModel: VideoViewModel, auth
     var videoDisabled by remember { mutableStateOf(false) }
     val activity = (LocalContext.current as? Activity)
     val coroutineScope = CoroutineScope(Dispatchers.Main)
+    val mContext = LocalContext.current
 
     Row(
         modifier = Modifier
@@ -324,9 +333,9 @@ private fun UserControls(videoEngine: RtcEngine, viewModel: VideoViewModel, auth
         OutlinedButton(
             onClick = {
                 coroutineScope.launch {
-                    viewModel.onFinish(authToken)
+                    viewModel.onFinish(authToken, mContext)
+                    videoEngine.leaveChannel()
                 }
-                videoEngine.leaveChannel()
             },
             shape = CircleShape,
             modifier = Modifier.size(70.dp),

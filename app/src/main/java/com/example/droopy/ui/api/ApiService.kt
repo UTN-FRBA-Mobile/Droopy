@@ -7,10 +7,8 @@ interface ApiService {
     @POST("auth/login")
     suspend fun login(@Body body: LoginRequestBody): LoginResponse
 
-    @GET("api/film_search/me/consumer")
-    suspend fun getFilmSearchConsumer(
-        @Query("limit") limit: Int,
-        @Query("offset") offset: Int,
+    @GET("film_search/closests")
+    suspend fun getSearches(
         @Header("Authorization") authorization: String
     ): List<FilmSearchesResponse>
 
