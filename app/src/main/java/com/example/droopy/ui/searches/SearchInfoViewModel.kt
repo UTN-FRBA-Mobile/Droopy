@@ -47,6 +47,8 @@ val searchInfoMock2 =
 
 class SearchInfoViewModel : ViewModel() {
     private val _searchInfoState = MutableStateFlow<SearchInfo?>(null)
+    val isLoading = MutableStateFlow(true)
+    val error = MutableStateFlow<String?>(null)
     val searchInfoState: StateFlow<SearchInfo?> get() = _searchInfoState
 
     private val baseUrl = "http://172.16.0.22:3001/"
@@ -71,11 +73,14 @@ class SearchInfoViewModel : ViewModel() {
     fun getSearchInfoById(searchId: String, token: String) {
         viewModelScope.launch {
             try {
+                isLoading.value = true
                 val search = service.getFilmSearchById(searchId, "Bearer $token")
                 Log.d(this.javaClass.name, "Fetched search info: $search")
                 _searchInfoState.value = search
+                isLoading.value = false
             } catch (e: Exception) {
                 Log.e(this.javaClass.name, "Error fetching search info $searchId with token $token", e)
+                error.value = e.message
             }
         }
     }

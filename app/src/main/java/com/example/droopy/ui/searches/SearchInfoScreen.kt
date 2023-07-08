@@ -36,21 +36,24 @@ fun SearchInfoScreen(searchId: String) {
     searchInfoViewModel.getSearchInfoById(searchId, token!!)
 
     val searchInfoState by searchInfoViewModel.searchInfoState.collectAsState()
+    val isLoading by searchInfoViewModel.isLoading.collectAsState()
+    val error by searchInfoViewModel.error.collectAsState()
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        when(val searchInfo = searchInfoState) {
-            null -> {
-                // While loading or on error
-                // TODO: add a loading
-                Text(text = "Loading or error...")
+        when {
+            isLoading -> {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            }
+            searchInfoState != null -> {
+                // On success
+                SearchInfoCard(Modifier.align(Alignment.Center), searchInfoState!!)
             }
             else -> {
-                // On success
-                SearchInfoCard(Modifier.align(Alignment.Center), searchInfo)
+                Text(text = "An error occurred: $error", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
